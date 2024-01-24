@@ -103,7 +103,7 @@ func (r *unicodeStringResource) Read(_ context.Context, req resource.ReadRequest
 }
 
 func (r *unicodeStringResource) Update(_ context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	//
+	// Didn't Change
 }
 
 func (r *unicodeStringResource) Delete(_ context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {

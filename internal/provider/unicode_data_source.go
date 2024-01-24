@@ -48,12 +48,11 @@ func (d *UnicodeDataSource) Metadata(ctx context.Context, req datasource.Metadat
 
 func (d *UnicodeDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 
-	resp.Diagnostics.AddWarning("configure not implemented", "")
-
 	unicodeClient, ok := req.ProviderData.(*unicode_client.UnicodeProviderClient)
 
 	if unicodeClient == nil {
 		resp.Diagnostics.AddWarning("invalid provider configuration", "IS NULL")
+		unicodeClient = unicode_client.NewUnicodeProviderClient("bob")
 	}
 
 	if !ok {

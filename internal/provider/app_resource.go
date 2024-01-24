@@ -3,12 +3,15 @@ package provider
 import (
 	"context"
 
+	unicode_client "terraform-provider-unicode/internal/unicode"
+
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
 var (
-	_ resource.Resource = &UnicodeAppResource{}
+	_ resource.Resource              = &UnicodeAppResource{}
+	_ resource.ResourceWithConfigure = &UnicodeAppResource{}
 )
 
 func NewUnicodeAppResource() resource.Resource {
@@ -16,6 +19,7 @@ func NewUnicodeAppResource() resource.Resource {
 }
 
 type UnicodeAppResource struct {
+	unicodeClient *unicode_client.UnicodeProviderClient
 }
 
 func (r *UnicodeAppResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -23,13 +27,6 @@ func (r *UnicodeAppResource) Metadata(_ context.Context, req resource.MetadataRe
 }
 
 // What Types and Annotations Will I need if I want to create a resource that will create a unicode character
-type UnicodeAppModel struct {
-	Id          string `json:"id" tfsdk:"id"`
-	Name        string `json:"name" tfsdk:"name"`
-	Description string `json:"description" tfsdk:"description"`
-	Created_at  string `json:"created_at" tfsdk:"created_at"`
-	Updated_at  string `json:"updated_at" tfsdk:"updated_at"`
-}
 
 func (r *UnicodeAppResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	//resp.Schema = schema.Schema{}
@@ -58,24 +55,26 @@ func (r *UnicodeAppResource) Schema(_ context.Context, _ resource.SchemaRequest,
 
 // Create a New Resource
 func (r *UnicodeAppResource) Create(_ context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	//resp.State = req.Plan
-	var plan UnicodeAppModel
-	diags := req.Config.Get(context.Background(), &plan)
-	resp.Diagnostics.Append(diags...)
+	var plan unicode_client.UnicodeAppModel
+	//resp.State = req.NewState
+	req.Config.Get(context.Background(), &plan)
 
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	resp.Diagnostics.AddWarning("Client Resource", plan.Id)
 
-	rt := &UnicodeAppModel{
+	//Get the Resource Client
+	res, err := r.unicodeClient.CreateApplication(unicode_client.UnicodeAppModel{
 		Id:          plan.Id,
 		Name:        plan.Name,
 		Description: plan.Description,
 		Created_at:  plan.Created_at,
 		Updated_at:  plan.Updated_at,
+	})
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to get Unicode Applications", err.Error())
+		return
 	}
 
-	diags = resp.State.Set(context.Background(), rt)
+	diags := resp.State.Set(context.Background(), res)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -84,14 +83,100 @@ func (r *UnicodeAppResource) Create(_ context.Context, req resource.CreateReques
 }
 
 func (r *UnicodeAppResource) Read(_ context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	resp.State = req.State
+	var response *unicode_client.UnicodeAppModel
+
+	//
+	//
+	response, err := r.unicodeClient.GetApplications()
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to get Unicode Applications", err.Error())
+		resp.Diagnostics.AddWarning("OLD ID ", response.Id)
+		return
+	}
+
+	var old_state unicode_client.UnicodeAppModel
+
+	req.State.Get(context.Background(), &old_state)
+
+	diags := resp.State.Set(context.Background(), old_state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 }
 
 func (r *UnicodeAppResource) Update(_ context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var plan unicode_client.UnicodeAppModel
 	//resp.State = req.NewState
-	resp.State = req.State
+	req.Config.Get(context.Background(), &plan)
+	//req.State.Get(context.Background(), &plan)
+
+	var old_plan unicode_client.UnicodeAppModel
+
+	req.State.Get(context.Background(), &old_plan)
+
+	resp.Diagnostics.AddWarning("Client Resource", old_plan.Id)
+
+	//Delete Old Resource
+	err := r.unicodeClient.DeleteApplication(old_plan.Id) //Assuming It keeps Same ID -> Stop Being a Silly Goose ...
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to get Unicode Applications", err.Error())
+		return
+	}
+
+	//Get the Resource Client
+	res, err := r.unicodeClient.CreateApplication(unicode_client.UnicodeAppModel{
+		Id:          plan.Id,
+		Name:        plan.Name,
+		Description: plan.Description,
+		Created_at:  plan.Created_at,
+		Updated_at:  plan.Updated_at,
+	})
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to get Unicode Applications", err.Error())
+		return
+	}
+
+	diags := resp.State.Set(context.Background(), res)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 }
 
 func (r *UnicodeAppResource) Delete(_ context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	resp.State = req.State
+	//Delete Application
+
+	var plan unicode_client.UnicodeAppModel
+
+	req.State.Get(context.Background(), &plan)
+
+	err := r.unicodeClient.DeleteApplication(plan.Id)
+
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to get Unicode Applications", err.Error())
+		return
+	}
+
+	// Return
+	resp.State.Set(context.Background(), nil)
+
+}
+
+func (r *UnicodeAppResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+
+	unicodeClient, ok := req.ProviderData.(*unicode_client.UnicodeProviderClient)
+
+	if !ok {
+		//resp.Diagnostics.AddError("Unable to create client in resource", "Client is NULL After NewUnicodeProviderClient")
+		//return
+		resp.Diagnostics.AddWarning("Unable to create client in resource", "Client is NULL After NewUnicodeProviderClient")
+		unicodeClient = unicode_client.NewUnicodeProviderClient("bob")
+	}
+
+	r.unicodeClient = unicodeClient
+
+	return
 }

@@ -10,7 +10,8 @@ terraform {
 }
 
 provider "unicode" {
-  user = "tray"
+  //user = "tray"
+  user = var.user
 }
 
 data "unicode_unicode_chars" "example" {
@@ -27,7 +28,7 @@ output "unicode_char" {
 */
 
 resource "unicode_app" "example_app" {
-  id          = "examplrrrre"
+  id          = "example 14"
   name        = "example app234"
   description = "example"
   updated_at  = "2021-07-01T00:00:00Z"
@@ -38,13 +39,18 @@ output "name" {
   value = resource.unicode_app.example_app
 }
 
-resource "unicode_unicode_string" "my_string" {
+/*resource "unicode_unicode_string" "my_string" {
   app_id = unicode_app.example_app.id
   name   = "Hello, World!"
   index  = 0
   id     = "example"
 }
 
-output "my_gamer" {
+*/
+
+/*output "my_gamer" {
   value = resource.unicode_unicode_string.my_string
 }
+*/
+
+// Get Resources and Print Them

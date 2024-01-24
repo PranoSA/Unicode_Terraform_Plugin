@@ -129,7 +129,7 @@ func (up *unicodeProvider) Configure(ctx context.Context, req provider.Configure
 	client := unicode_client.NewUnicodeProviderClient(username)
 
 	if client == nil {
-		resp.Diagnostics.AddError("Unable to create client", "Client is NULL After NewUnicodeProviderClient")
+		resp.Diagnostics.AddError("Unable to create client provider", "Client is NULL After NewUnicodeProviderClient")
 		return
 	}
 
