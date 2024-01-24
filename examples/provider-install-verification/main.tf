@@ -27,6 +27,19 @@ output "unicode_char" {
 }
 */
 
+resource "unicode_app" "hedgehog_app" {
+  name        = "Hedgehog App"
+  description = "Hedgehog App"
+  id          = "12159012-123091SDSA"
+  updated_at  = "2021-07-01T00:00:00Z"
+  created_at  = "2021-07-01T00:00:00Z"
+}
+
+resource "unicode_unicode_string" "hedgehog_string" {
+  app_id = unicode_app.hedgehog_app.id
+  value  = "🦔"
+}
+
 resource "unicode_app" "example_app" {
   id          = "example14"
   name        = "example app234 for bob the builder the 2nd"
