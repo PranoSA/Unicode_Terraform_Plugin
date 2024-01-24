@@ -1,3 +1,38 @@
+To Try My Provider 
+Install Terraform
+Check if Go InstalledRun go version 
+File : ~/.terraformrc
+provider_installation {
+
+  dev_overrides {
+      "hashicorp.com/edu/unicode" = "/home/pranosaurus/go/bin"
+  }
+
+  # For all other providers, install them directly from their origin provider
+  # registries as normal. If you omit this, Terraform will _only_ use
+  # the dev_overrides block, and so no other providers will be available.
+  direct {}
+}
+
+EOF 
+Go to Whatever Folder
+Run git clone https://github.com/PranoSA/Unicode_Terraform_Plugin.git
+cd Unicode_Terraform_Plugin
+go install .
+
+cd examples/provider-install-verification
+Run terraform apply -var user=cash_money
+
+Open https://unicode.compressibleflowcalculator.com
+Press "View Saved"
+Enter "cash_money"
+Submit 
+Should see a Text that says "Hedgehog App"
+Click on the hedgehog app 
+
+If you can figure out, go back to the main.tf and modify where you think entering a new string might go 
+
+
 # Terraform Provider Scaffolding (Terraform Plugin Framework)
 
 _This template repository is built on the [Terraform Plugin Framework](https://github.com/hashicorp/terraform-plugin-framework). The template repository built on the [Terraform Plugin SDK](https://github.com/hashicorp/terraform-plugin-sdk) can be found at [terraform-provider-scaffolding](https://github.com/hashicorp/terraform-provider-scaffolding). See [Which SDK Should I Use?](https://developer.hashicorp.com/terraform/plugin/framework-benefits) in the Terraform documentation for additional information._
