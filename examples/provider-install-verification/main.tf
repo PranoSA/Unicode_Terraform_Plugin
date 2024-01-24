@@ -35,9 +35,24 @@ resource "unicode_app" "example_app" {
   created_at  = "2021-07-01T00:00:00Z"
 }
 
-output "name" {
+/*resource "unicode_unicode_string" "my_string" {
+  app_id = unicode_app.example_app.id
+  value  = "SEAN"
+}*/
+
+/*output "name" {
   value = resource.unicode_app.example_app
+}*/
+
+/*resource "unicode_unicode_string" "my_string" {
+  app_id = unicode_app.example_app.id
+  value  = "Horse"
 }
+*/
+/*resource "unicode_unicode_string" "my_string" {
+  app_id = unicode_app.example_app.id
+  value  = "H!"
+}*/
 
 /*resource "unicode_unicode_string" "my_string2" {
   app_id = unicode_app.example_app.id
@@ -50,12 +65,12 @@ output "my_string2" {
 
 */
 
-resource "unicode_unicode_string" "my_string" {
+/*resource "unicode_unicode_string" "my_string" {
   app_id = unicode_app.example_app.id
   value  = "!"
-}
+}*/
 
-resource "unicode_unicode_string" "my_string2" {
+/*resource "unicode_unicode_string" "my_string2" {
   app_id = unicode_unicode_string.my_string.app_id
   value  = "Hello, BOBS WORLD!"
 }
@@ -65,13 +80,15 @@ resource "unicode_unicode_string" "my_string3" {
   value  = "Hello, TRUCE OF THE MATTER!"
 }
 
+
 output "my_string2" {
   value = resource.unicode_unicode_string.my_string2
 }
+*/
 
-output "my_string" {
+/*output "my_string" {
   value = resource.unicode_unicode_string.my_string
-}
+}*/
 
 /*resource "unicode_unicode_string" "my_string" {
   app_id = unicode_app.example_app.id

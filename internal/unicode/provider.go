@@ -331,7 +331,7 @@ func (u *UnicodeProviderClient) AddConversionToApplication(plan UnicodeStringMod
 
 func (u *UnicodeProviderClient) RemoveConversionFromApplication(plan UnicodeStringModel) (*UnicodeAppModel, error) {
 
-	var current_app UnicodeAppModelReq
+	var current_app UnicodeAppModelReqString
 
 	jar, err := cookiejar.New(nil)
 	if err != nil {
@@ -364,6 +364,10 @@ func (u *UnicodeProviderClient) RemoveConversionFromApplication(plan UnicodeStri
 		return nil, err
 	}
 
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status get code %d", res.StatusCode)
+	}
+
 	// Decode JSON
 	err = json.NewDecoder(res.Body).Decode(&current_app)
 
@@ -378,6 +382,8 @@ func (u *UnicodeProviderClient) RemoveConversionFromApplication(plan UnicodeStri
 
 	current_app.Conversions = new_conversions
 
+	current_app.User_id = u.Username
+
 	//Now, Update the Application
 	body_bytes, err := json.Marshal(current_app)
 
@@ -387,15 +393,19 @@ func (u *UnicodeProviderClient) RemoveConversionFromApplication(plan UnicodeStri
 
 	update_req := &http.Request{
 		Method: "POST",
-		URL:    &url.URL{Scheme: "https", Host: host_url, Path: "/Prod/api/v1/application/" + plan.AppId},
+		URL:    &url.URL{Scheme: "https", Host: host_url, Path: "/Prod/api/v1/application"},
 		Body:   io.NopCloser(bytes.NewReader(body_bytes)),
 		Header: make(http.Header),
 	}
 
-	_, err = client.Do(update_req)
+	res, err = client.Do(update_req)
 
 	if err != nil {
 		return nil, err
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status post code %d", res.StatusCode)
 	}
 
 	return nil, nil
@@ -464,7 +474,7 @@ func (u *UnicodeProviderClient) GetConversionFromApplication(model UnicodeString
 
 	update_req := &http.Request{
 		Method: "POST",
-		URL:    &url.URL{Scheme: "https", Host: host_url, Path: "/Prod/api/v1/application/" + model.AppId},
+		URL:    &url.URL{Scheme: "https", Host: host_url, Path: "/Prod/api/v1/application"},
 		Body:   io.NopCloser(bytes.NewReader(body_bytes)),
 		Header: make(http.Header),
 	}
@@ -473,6 +483,10 @@ func (u *UnicodeProviderClient) GetConversionFromApplication(model UnicodeString
 
 	if err != nil {
 		return nil, err
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status post code %d", res.StatusCode)
 	}
 
 	//Now
