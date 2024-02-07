@@ -8,13 +8,17 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+	"sync"
 )
 
 var endpoint_url string = "unicode.compressibleflowcalculator.com/Prod/api/v1"
 var host_url string = "unicode.compressibleflowcalculator.com"
 
 type UnicodeProviderClient struct {
-	Username string
+	Username           string
+	mutual_access_test sync.Mutex
+	//
+	reserved map[string]bool
 }
 
 type UnicodeAppModel struct {
@@ -49,7 +53,7 @@ type Conversion struct {
 }
 
 func NewUnicodeProviderClient(username string) *UnicodeProviderClient {
-	return &UnicodeProviderClient{Username: username}
+	return &UnicodeProviderClient{Username: username, reserved: make(map[string]bool), mutual_access_test: sync.Mutex{}}
 }
 
 type UnicodeData struct {
@@ -246,7 +250,23 @@ func (u *UnicodeProviderClient) UpdateApplication(model UnicodeAppModel) (*Unico
 
 func (u *UnicodeProviderClient) AddConversionToApplication(plan UnicodeStringModel) (*UnicodeStringModel, []Conversion, error) {
 
+	//Check Mutex
+	for true {
+		u.mutual_access_test.Lock()
+		if u.reserved[plan.AppId] == true {
+			u.mutual_access_test.Unlock()
+			continue
+		}
+		u.reserved[plan.AppId] = true
+		u.mutual_access_test.Unlock()
+		break
+	}
+
 	if u.Username == "" {
+		u.mutual_access_test.Lock()
+
+		u.reserved[plan.AppId] = false
+		u.mutual_access_test.Unlock()
 		return nil, []Conversion{}, fmt.Errorf("Username is Empty")
 	}
 
@@ -254,6 +274,10 @@ func (u *UnicodeProviderClient) AddConversionToApplication(plan UnicodeStringMod
 
 	jar, err := cookiejar.New(nil)
 	if err != nil {
+		u.mutual_access_test.Lock()
+
+		u.reserved[plan.AppId] = false
+		u.mutual_access_test.Unlock()
 		return nil, []Conversion{}, err
 	}
 
@@ -280,10 +304,17 @@ func (u *UnicodeProviderClient) AddConversionToApplication(plan UnicodeStringMod
 	res, err := client.Do(get_app_req)
 
 	if err != nil {
+		u.mutual_access_test.Lock()
+
+		u.reserved[plan.AppId] = false
+		u.mutual_access_test.Unlock()
 		return nil, []Conversion{}, err
 	}
 
 	if res.StatusCode != http.StatusOK {
+		u.mutual_access_test.Lock()
+		u.reserved[plan.AppId] = false
+		u.mutual_access_test.Unlock()
 		return nil, []Conversion{}, fmt.Errorf("unexpected status get code %d", res.StatusCode)
 	}
 
@@ -306,6 +337,10 @@ func (u *UnicodeProviderClient) AddConversionToApplication(plan UnicodeStringMod
 	//Now, Update the Application
 	body_bytes, err := json.Marshal(current_app)
 	if err != nil {
+		u.mutual_access_test.Lock()
+
+		u.reserved[plan.AppId] = false
+		u.mutual_access_test.Unlock()
 		return nil, []Conversion{}, err
 	}
 
@@ -319,12 +354,24 @@ func (u *UnicodeProviderClient) AddConversionToApplication(plan UnicodeStringMod
 	res, err = client.Do(update_req)
 
 	if err != nil {
+		u.mutual_access_test.Lock()
+
+		u.reserved[plan.AppId] = false
+		u.mutual_access_test.Unlock()
 		return nil, []Conversion{}, err
 	}
 
 	if res.StatusCode != http.StatusOK {
+		u.mutual_access_test.Lock()
+
+		u.reserved[plan.AppId] = false
+		u.mutual_access_test.Unlock()
 		return nil, []Conversion{}, fmt.Errorf("unexpected status post code %d", res.StatusCode)
 	}
+
+	u.mutual_access_test.Lock()
+	u.reserved[plan.AppId] = false
+	u.mutual_access_test.Unlock()
 
 	return &plan, current_app.Conversions, nil
 }
@@ -333,8 +380,24 @@ func (u *UnicodeProviderClient) RemoveConversionFromApplication(plan UnicodeStri
 
 	var current_app UnicodeAppModelReqString
 
+	//Check Mutex
+	for true {
+		u.mutual_access_test.Lock()
+		if u.reserved[plan.AppId] == true {
+			u.mutual_access_test.Unlock()
+			continue
+		}
+		u.reserved[plan.AppId] = true
+		u.mutual_access_test.Unlock()
+		break
+	}
+
 	jar, err := cookiejar.New(nil)
 	if err != nil {
+		u.mutual_access_test.Lock()
+
+		u.reserved[plan.AppId] = false
+		u.mutual_access_test.Unlock()
 		return nil, err
 	}
 
@@ -361,10 +424,18 @@ func (u *UnicodeProviderClient) RemoveConversionFromApplication(plan UnicodeStri
 	res, err := client.Do(get_app_req)
 
 	if err != nil {
+		u.mutual_access_test.Lock()
+
+		u.reserved[plan.AppId] = false
+		u.mutual_access_test.Unlock()
 		return nil, err
 	}
 
 	if res.StatusCode != http.StatusOK {
+		u.mutual_access_test.Lock()
+
+		u.reserved[plan.AppId] = false
+		u.mutual_access_test.Unlock()
 		return nil, fmt.Errorf("unexpected status get code %d", res.StatusCode)
 	}
 
@@ -388,6 +459,10 @@ func (u *UnicodeProviderClient) RemoveConversionFromApplication(plan UnicodeStri
 	body_bytes, err := json.Marshal(current_app)
 
 	if err != nil {
+		u.mutual_access_test.Lock()
+
+		u.reserved[plan.AppId] = false
+		u.mutual_access_test.Unlock()
 		return nil, err
 	}
 
@@ -401,12 +476,25 @@ func (u *UnicodeProviderClient) RemoveConversionFromApplication(plan UnicodeStri
 	res, err = client.Do(update_req)
 
 	if err != nil {
+		u.mutual_access_test.Lock()
+
+		u.reserved[plan.AppId] = false
+		u.mutual_access_test.Unlock()
 		return nil, err
 	}
 
 	if res.StatusCode != http.StatusOK {
+		u.mutual_access_test.Lock()
+
+		u.reserved[plan.AppId] = false
+		u.mutual_access_test.Unlock()
 		return nil, fmt.Errorf("unexpected status post code %d", res.StatusCode)
 	}
+
+	u.mutual_access_test.Lock()
+
+	u.reserved[plan.AppId] = false
+	u.mutual_access_test.Unlock()
 
 	return nil, nil
 
@@ -469,6 +557,7 @@ func (u *UnicodeProviderClient) GetConversionFromApplication(model UnicodeString
 	//Now, Update the Application
 	body_bytes, err := json.Marshal(Application)
 	if err != nil {
+
 		return nil, err
 	}
 

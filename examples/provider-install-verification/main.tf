@@ -14,6 +14,36 @@ provider "unicode" {
   user = var.user
 }
 
+
+resource "unicode_app " "America Themed App" {
+  name        = "WJAdler App"
+  description = "WJAdler App"
+  id          = "12159012-123091SDSA"
+  updated_at  = "2021-07-01T00:00:00Z"
+  created_at  = "2021-07-01T00:00:00Z"
+}
+
+resource "unicode_unicode_string" "america_string" {
+  app_id = unicode_app.america_app.id
+  value  = "🇺🇸"
+}
+
+resource "unicode_unicode_string" "football_string" {
+  app_id = unicode_app.america_app.id
+  value  = "🏈"
+}
+
+resource "unicode_unicode_string" "baseball_string" {
+  app_id = unicode_app.america_app.id
+  value  = "⚾"
+}
+
+resource "unicode_unicode_string" "fastfood_string" {
+  app_id = unicode_app.america_app.id
+  value  = "🍔🥤🍟🌭"
+}
+
+
 data "unicode_unicode_chars" "example" {
   unicode_char = "🦔"
 }
@@ -21,6 +51,7 @@ data "unicode_unicode_chars" "example" {
 output "unicode_char" {
   value = data.unicode_unicode_chars.example
 }
+
 
 /*data "hashicups_unicode_character" "char" {
   unicode_char = "🦔"
