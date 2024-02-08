@@ -423,6 +423,15 @@ func (u *UnicodeProviderClient) RemoveConversionFromApplication(plan UnicodeStri
 
 	res, err := client.Do(get_app_req)
 
+	if res.StatusCode == http.StatusNotFound {
+		// Application not found, return nil
+		u.mutual_access_test.Lock()
+
+		u.reserved[plan.AppId] = false
+		u.mutual_access_test.Unlock()
+		return nil, nil //Already Deleted, No Error
+	}
+
 	if err != nil {
 		u.mutual_access_test.Lock()
 

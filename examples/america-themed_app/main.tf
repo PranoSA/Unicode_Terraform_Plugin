@@ -15,8 +15,8 @@ provider "unicode" {
 }
 
 
-resource "unicode_app" "america3" {
-  name        = "USA Application"
+resource "unicode_app" "ammerica_application_v2" {
+  name        = "USA Application v2 "
   description = "America App v2"
   id          = "1215902212-123091SDSA"
   updated_at  = "2021-07-01T00:00:00Z"
@@ -24,23 +24,21 @@ resource "unicode_app" "america3" {
 }
 
 resource "unicode_unicode_string" "america_string" {
-  app_id = unicode_app.america3.id
+  app_id = unicode_app.ammerica_application_v2.id
   value  = "🇺🇸"
 }
 
-
 resource "unicode_unicode_string" "football_string" {
-  app_id = unicode_app.america3.id
+  app_id = unicode_app.ammerica_application_v2.id
   value  = "🏈"
 }
 
 resource "unicode_unicode_string" "baseball_string" {
-  app_id = unicode_app.america3.id
+  app_id = unicode_app.ammerica_application_v2.id
   value  = "⚾"
 }
 
 resource "unicode_unicode_string" "fastfood_string" {
-  app_id = unicode_app.america3.id
+  app_id = unicode_app.ammerica_application_v2.id
   value  = "🍔🥤🍟🌭"
 }
-
