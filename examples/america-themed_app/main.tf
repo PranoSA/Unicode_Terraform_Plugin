@@ -16,7 +16,7 @@ provider "unicode" {
 
 
 #  id          = "1215902212-123091SDSA"
-resource "unicode_app" "ammerica_application_v2" {
+resource "unicode_app" "america_application_v2" {
   name        = "USA Application version the first the second"
   description = "America App v2"
   # id          = "1215902212-123091SDSA"

@@ -129,7 +129,7 @@ func (r *UnicodeAppResource) Create(ctx context.Context, req resource.CreateRequ
 
 func (r *UnicodeAppResource) Read(_ context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 
-	var request *unicode_client.UnicodeAppModel
+	var request unicode_client.UnicodeAppModel
 
 	req.State.Get(context.Background(), &request)
 
@@ -138,10 +138,10 @@ func (r *UnicodeAppResource) Read(_ context.Context, req resource.ReadRequest, r
 	response, err := r.unicodeClient.GetApplication(request.Id.ValueString())
 
 	if err != nil {
-		//resp.Diagnostics.AddError("Unable to get Unicode Applications", err.Error())
-		//return
-		resp.Diagnostics.AddWarning("May Not Be Created Yet", err.Error())
-		req.State.Get(context.Background(), response)
+		resp.Diagnostics.AddError("Unable to get Unicode Applications", err.Error())
+		return
+		//resp.Diagnostics.AddWarning("May Not Be Created Yet", err.Error())
+		//req.State.Get(context.Background(), response)
 	}
 
 	diags := resp.State.Set(context.Background(), response)

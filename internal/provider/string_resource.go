@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"errors"
 	unicode_client "terraform-provider-unicode/internal/unicode"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -113,6 +114,8 @@ func (r *unicodeStringResource) Read(_ context.Context, req resource.ReadRequest
 		//return
 	}
 
+	rr.AppId = plan.AppId
+
 	diags = resp.State.Set(context.Background(), rr)
 
 	resp.Diagnostics.Append(diags...)
@@ -152,7 +155,8 @@ func (r *unicodeStringResource) Delete(_ context.Context, req resource.DeleteReq
 	_, err := r.unicodeClient.RemoveConversionFromApplication(plan)
 
 	if err != nil {
-		resp.Diagnostics.AddError("Unable to Delete Conversion", err.Error())
+		resp.Diagnostics.AddError("Unable to Delete Conversion", errors.New(plan.AppId+"Plan ID").Error())
+		resp.Diagnostics.AddError("Unable to Delete Conversion FRom Conversaton id", err.Error())
 		return
 	}
 

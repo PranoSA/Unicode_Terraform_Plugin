@@ -126,7 +126,8 @@ func (u *UnicodeProviderClient) GetApplication(id string) (*UnicodeAppModel, err
 		return nil, fmt.Errorf("unexpected status code %d", res.StatusCode)
 	}
 
-	var app UnicodeAppModel
+	//var app UnicodeAppModel
+	var app UnicodeAppModelResponse
 
 	// Decode JSON
 	err = json.NewDecoder(res.Body).Decode(&app)
@@ -135,7 +136,15 @@ func (u *UnicodeProviderClient) GetApplication(id string) (*UnicodeAppModel, err
 		return nil, err
 	}
 
-	return &app, nil
+	// Copy app fields into model
+
+	return &UnicodeAppModel{
+		Id:          basetypes.NewStringValue(app.Id),
+		Name:        app.Name,
+		Description: app.Description,
+		Created_at:  app.Created_at,
+		Updated_at:  app.Updated_at,
+	}, nil
 
 }
 
@@ -485,14 +494,30 @@ func (u *UnicodeProviderClient) RemoveConversionFromApplication(plan UnicodeStri
 
 	// Now  Find Current String With That Value and Remove it
 	var new_conversions []Conversion
+	anymatch := false
 
 	for _, v := range current_app.Conversions {
 		if v.Value != plan.Value {
 			new_conversions = append(new_conversions, v)
+			continue
 		}
+		anymatch = true
+	}
+
+	if !anymatch {
+		u.mutual_access_test.Lock()
+
+		u.reserved[plan.AppId] = false
+		u.mutual_access_test.Unlock()
+
+		return nil, fmt.Errorf("Conversion Not Found")
 	}
 
 	current_app.Conversions = new_conversions
+
+	if len(current_app.Conversions) == 0 {
+		current_app.Conversions = []Conversion{}
+	}
 
 	current_app.User_id = u.Username
 
@@ -592,34 +617,9 @@ func (u *UnicodeProviderClient) GetConversionFromApplication(model UnicodeString
 		return nil, err
 	}
 
-	//Now Append the Conversion to the Application
-	Application.Conversions = append(Application.Conversions, plan)
+	return &UnicodeStringModel{
+		Value: plan.Value,
+		AppId: model.AppId,
+	}, nil
 
-	//Now, Update the Application
-	body_bytes, err := json.Marshal(Application)
-	if err != nil {
-
-		return nil, err
-	}
-
-	update_req := &http.Request{
-		Method: "POST",
-		URL:    &url.URL{Scheme: "https", Host: host_url, Path: "/Prod/api/v1/application"},
-		Body:   io.NopCloser(bytes.NewReader(body_bytes)),
-		Header: make(http.Header),
-	}
-
-	res, err = client.Do(update_req)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status post code %d", res.StatusCode)
-	}
-
-	//Now
-
-	return &model, nil
 }
