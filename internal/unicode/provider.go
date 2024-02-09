@@ -9,6 +9,8 @@ import (
 	"net/http/cookiejar"
 	"net/url"
 	"sync"
+
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
 var endpoint_url string = "unicode.compressibleflowcalculator.com/Prod/api/v1"
@@ -21,12 +23,28 @@ type UnicodeProviderClient struct {
 	reserved map[string]bool
 }
 
-type UnicodeAppModel struct {
-	Id          string `json:"appid" tfsdk:"id"`
+type UnicodeRequestModel struct {
 	Name        string `json:"name" tfsdk:"name"`
 	Description string `json:"description" tfsdk:"description"`
 	Created_at  string `json:"created_at" tfsdk:"created_at"`
 	Updated_at  string `json:"updated_at" tfsdk:"updated_at"`
+}
+
+type UnicodeAppModel struct {
+	Id          basetypes.StringValue `json:"appid" tfsdk:"id"`
+	Name        string                `json:"name" tfsdk:"name"`
+	Description string                `json:"description" tfsdk:"description"`
+	Created_at  string                `json:"created_at" tfsdk:"created_at"`
+	Updated_at  string                `json:"updated_at" tfsdk:"updated_at"`
+}
+
+type UnicodeAppModelResponse struct {
+	Id          string       `json:"appid" tfsdk:"id"`
+	Name        string       `json:"name" tfsdk:"name"`
+	Description string       `json:"description" tfsdk:"description"`
+	Created_at  string       `json:"created_at" tfsdk:"created_at"`
+	Updated_at  string       `json:"updated_at" tfsdk:"updated_at"`
+	Conversions []Conversion `json:"conversions"`
 }
 
 type UnicodeAppModelReq struct {
@@ -142,7 +160,7 @@ func (u *UnicodeProviderClient) CreateApplication(model UnicodeAppModel) (*Unico
 
 	// turn model into model request
 	model_req := UnicodeAppModelReqString{
-		Id:          model.Id,
+		//Id:          model.Id,
 		Name:        model.Name,
 		Description: model.Description,
 		Created_at:  model.Created_at,
@@ -173,7 +191,19 @@ func (u *UnicodeProviderClient) CreateApplication(model UnicodeAppModel) (*Unico
 		return nil, err
 	}
 
+	var response UnicodeAppModelResponse
+
+	// Decode JSON
+
+	err = json.NewDecoder(res.Body).Decode(&response)
+
+	model.Id = basetypes.NewStringValue(response.Id)
+
 	return &model, nil
+
+	//return &response, nil
+
+	//return &model, nil
 }
 
 func (u *UnicodeProviderClient) DeleteApplication(id string) error {
@@ -232,9 +262,11 @@ func (u *UnicodeProviderClient) UpdateApplication(model UnicodeAppModel) (*Unico
 		return nil, err
 	}
 
+	id := model.Id.ValueString()
+
 	req := &http.Request{
 		Method: "PUT",
-		URL:    &url.URL{Scheme: "https", Host: host_url, Path: "/Prod/api/v1/application/" + model.Id},
+		URL:    &url.URL{Scheme: "https", Host: host_url, Path: "/Prod/api/v1/application/" + id},
 		Body:   io.NopCloser(bytes.NewReader(body_bytes)),
 		Header: make(http.Header),
 	}

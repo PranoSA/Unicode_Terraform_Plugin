@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"strings"
 
 	unicode_client "terraform-provider-unicode/internal/unicode"
 
@@ -31,10 +32,37 @@ func (r *UnicodeAppResource) Metadata(_ context.Context, req resource.MetadataRe
 func (r *UnicodeAppResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	//resp.Schema = schema.Schema{}
 	//resp.Schema = map[string]resource.Attribute{
+
+	/*resp.Schema = tfsdk.Schema {
+		Attributes: map[string]tfsdk.Attribute{
+			"app_id": {
+				Type: tfsdk.StringType,
+				compute: true,
+			},
+			"name": {
+				Type: tfsdk.StringType,
+				Required: true,
+			},
+			"description": {
+				Type: tfsdk.StringType,
+				Required: true,
+			},
+			"created_at": {
+				Type: tfsdk.StringType,
+				Required: true,
+			},
+			"updated_at": {
+				Type: tfsdk.StringType,
+				Required: true,
+			},
+		},
+
+	}*/
+
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Required: true,
+				Computed: true,
 			},
 			"name": schema.StringAttribute{
 				Required: true,
@@ -54,16 +82,22 @@ func (r *UnicodeAppResource) Schema(_ context.Context, _ resource.SchemaRequest,
 }
 
 // Create a New Resource
-func (r *UnicodeAppResource) Create(_ context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *UnicodeAppResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan unicode_client.UnicodeAppModel
 	//resp.State = req.NewState
-	req.Config.Get(context.Background(), &plan)
+	//req.Config.Get(ctx, &plan)
+	req.Plan.Get(ctx, &plan)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	s := req.Plan.Raw
+	resp.Diagnostics.AddWarning("Client Resource Requested s", s.String())
+	strings.Split(s.String(), "")
 
-	resp.Diagnostics.AddWarning("Client Resource", plan.Id)
+	//req.Plan.Set()
+
+	resp.Diagnostics.AddWarning("Client Resource Requested Nem", plan.Name)
 
 	//Get the Resource Client
 	res, err := r.unicodeClient.CreateApplication(unicode_client.UnicodeAppModel{
-		Id:          plan.Id,
 		Name:        plan.Name,
 		Description: plan.Description,
 		Created_at:  plan.Created_at,
@@ -74,7 +108,18 @@ func (r *UnicodeAppResource) Create(_ context.Context, req resource.CreateReques
 		return
 	}
 
-	diags := resp.State.Set(context.Background(), res)
+	var fake_response unicode_client.UnicodeAppModel
+
+	fake_response.Created_at = plan.Created_at
+	fake_response.Description = plan.Description
+	fake_response.Id = res.Id
+	fake_response.Name = plan.Name
+	fake_response.Updated_at = plan.Updated_at
+
+	resp.Diagnostics.AddWarning("Client Resource ID", res.Id.String())
+	resp.Diagnostics.AddWarning("Client Resource Name", fake_response.Name)
+
+	diags := resp.State.Set(context.Background(), fake_response)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -90,7 +135,7 @@ func (r *UnicodeAppResource) Read(_ context.Context, req resource.ReadRequest, r
 
 	//
 	//
-	response, err := r.unicodeClient.GetApplication(request.Id)
+	response, err := r.unicodeClient.GetApplication(request.Id.ValueString())
 
 	if err != nil {
 		//resp.Diagnostics.AddError("Unable to get Unicode Applications", err.Error())
@@ -117,10 +162,10 @@ func (r *UnicodeAppResource) Update(_ context.Context, req resource.UpdateReques
 
 	req.State.Get(context.Background(), &old_plan)
 
-	resp.Diagnostics.AddWarning("Client Resource", old_plan.Id)
+	resp.Diagnostics.AddWarning("Client Resource", old_plan.Id.ValueString())
 
 	//Delete Old Resource
-	err := r.unicodeClient.DeleteApplication(old_plan.Id) //Assuming It keeps Same ID -> Stop Being a Silly Goose ...
+	err := r.unicodeClient.DeleteApplication(old_plan.Id.ValueString()) //Assuming It keeps Same ID -> Stop Being a Silly Goose ...
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to get Unicode Applications", err.Error())
 		return
@@ -154,7 +199,7 @@ func (r *UnicodeAppResource) Delete(_ context.Context, req resource.DeleteReques
 
 	req.State.Get(context.Background(), &plan)
 
-	err := r.unicodeClient.DeleteApplication(plan.Id)
+	err := r.unicodeClient.DeleteApplication(plan.Id.ValueString())
 
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to get Unicode Applications", err.Error())

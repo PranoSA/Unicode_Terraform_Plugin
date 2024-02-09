@@ -15,12 +15,13 @@ provider "unicode" {
 }
 
 
+#  id          = "1215902212-123091SDSA"
 resource "unicode_app" "ammerica_application_v2" {
-  name        = "USA Application v2 "
+  name        = "USA Application version the first the second"
   description = "America App v2"
-  id          = "1215902212-123091SDSA"
-  updated_at  = "2021-07-01T00:00:00Z"
-  created_at  = "2021-07-01T00:00:00Z"
+  # id          = "1215902212-123091SDSA"
+  updated_at = "2024-07-04T00:00:00Z"
+  created_at = "2021-07-04T00:00:00Z"
 }
 
 resource "unicode_unicode_string" "america_string" {
