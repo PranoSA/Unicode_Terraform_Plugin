@@ -1,0 +1,61 @@
+name: unicode-docker-repository
+run-name: unicode-docker-run
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Docker buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push default image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: pcadler/unicode-terraform-plugin:latest
+          target: default
+
+      - name: Build and push american image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.repository }}/american-latest
+          target: american
+
+      - name: Build and push amphibian image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: pcadler/unicode-terraform-plugin:amphibian-latest
+          target: amphibian
+
+      - name: Build and push halloween image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: pcadler/unicode-terraform-plugin:halloween-latest
+          target: halloween
+
+  #test_docker_build:
+
+  #test_apply_and_destroy:
+
+  #push_docker_images:

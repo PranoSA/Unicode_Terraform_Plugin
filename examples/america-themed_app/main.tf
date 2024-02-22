@@ -25,21 +25,21 @@ resource "unicode_app" "america_application_v2" {
 }
 
 resource "unicode_unicode_string" "america_string" {
-  app_id = unicode_app.ammerica_application_v2.id
+  app_id = unicode_app.america_application_v2.id
   value  = "🇺🇸"
 }
 
 resource "unicode_unicode_string" "football_string" {
-  app_id = unicode_app.ammerica_application_v2.id
+  app_id = unicode_app.america_application_v2.id
   value  = "🏈"
 }
 
 resource "unicode_unicode_string" "baseball_string" {
-  app_id = unicode_app.ammerica_application_v2.id
+  app_id = unicode_app.america_application_v2.id
   value  = "⚾"
 }
 
 resource "unicode_unicode_string" "fastfood_string" {
-  app_id = unicode_app.ammerica_application_v2.id
+  app_id = unicode_app.america_application_v2.id
   value  = "🍔🥤🍟🌭"
 }

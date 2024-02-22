@@ -16,9 +16,9 @@ provider "unicode" {
 resource "unicode_app" "amphibian_application" {
   name        = "Amphibian Application"
   description = "Amphibian App v2"
-  id          = "1215902212-123091SDSA"
-  updated_at  = "2024-02-07T00:00:00Z"
-  created_at  = "2024-02-07T10:00:00Z"
+  //id          = "1215902212-123091SDSA"
+  updated_at = "2024-02-07T00:00:00Z"
+  created_at = "2024-02-07T10:00:00Z"
 }
 
 resource "unicode_unicode_string" "frog_string" {
