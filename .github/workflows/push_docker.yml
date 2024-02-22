@@ -37,6 +37,12 @@ jobs:
           push: true
           tags: pcadler/unicode-terraform-plugin:american-latest
           target: american
+      - name: test american image
+        run: |
+          docker run pcadler/unicode-terraform-plugin:american-latest
+      - name: run terraform destroy
+        run: |
+          docker run pcadler/unicode-terraform-plugin:american-latest terraform destroy -auto-approve
 
       - name: Build and push amphibian image
         uses: docker/build-push-action@v2
