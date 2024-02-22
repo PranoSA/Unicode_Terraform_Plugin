@@ -42,7 +42,7 @@ jobs:
           docker run -v terraform:/home/app/america-themed-app  pcadler/unicode-terraform-plugin:american-latest
       - name: run terraform destroy
         run: |
-          docker run --entrypoint "terraform" -v terraform:/home/app/america-themed-app  pcadler/unicode-terraform-plugin:american-latest destroy -auto-approve
+          docker run --entrypoint "terraform" -v terraform:/home/app/america-themed-app  pcadler/unicode-terraform-plugin:american-latest destroy --var user=default -auto-approve
 
       - name: Build and push amphibian image
         uses: docker/build-push-action@v2
